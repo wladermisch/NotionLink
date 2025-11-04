@@ -48,7 +48,7 @@ Best of all, it can monitor entire folders and automatically add links for new f
 * **What it does:** If the application crashes unexpectedly, Sentry automatically sends us an anonymous report about the crash. This helps us understand *what* went wrong so we can fix it in the next version.
 * **What about Privacy?** We do **not** send or collect any of your personal data. The reports **do not include** your Notion Token, your file paths, your IP address, or any other personally identifiable information. The report only contains the technical details of the code-level error and an anonymous machine ID.
 * **What about Performance?** It does not affect the app's performance. It only runs for a split second if an error occurs and is otherwise completely inactive.
-* **Can I disable it?** Yes, you can disable this feature at any time in the `config.json` file by setting `"enable_error_reporting": false`. (Note: This feature must be implemented in the code first).
+* **Can I disable it?** Yes, you can disable this feature at any time in the `config.json` file by setting `"sentry_enabled": false`. 
 
 Helping us receive these bug reports is the best way you can contribute to improving the stability of NotionLink for everyone.
 
