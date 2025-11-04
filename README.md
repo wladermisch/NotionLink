@@ -1,6 +1,7 @@
 # NotionLink 🔗
 
 ![NotionLink Tray Menu](https://gdurl.com/gYfT) 
+
 **NotionLink** is a Windows tray utility that bridges your local file system with Notion. It creates clickable `http://localhost` links for your local files, allowing you to open them directly from your Notion pages.
 
 ---
