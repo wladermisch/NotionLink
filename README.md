@@ -12,7 +12,8 @@ Notion is fantastic for organization, but it has one major limitation: it cannot
 
 Your options were:
 1.  **Upload to Notion:** This uses storage space, creates duplicates, and is impractical for large files or entire project folders.
-2.  **Use `file://` links:** These are blocked by most modern browsers and the Notion app for security reasons, making them unclickable.
+2.  **Edited files not synced:** Made some changes to your pdf? Because you uploaded the file into Notion, you won't be able to see the change.
+3.  **Use `file://` links:** These are unclickable and you would need to paste the link into your browser.
 
 ## ✨ The Solution
 
@@ -37,21 +38,23 @@ Best of all, it can monitor entire folders and automatically add links for new f
 * **Dark Mode GUI:** A modern, dark-themed UI for managing your token and folder-page mappings.
 * **Link Converter Tools:** Menu options to quickly convert a path or your clipboard content into a `localhost` link.
 * **Stable Tray Menu:** Uses Win32-API calls to ensure the tray menu is stable, even when nested in the taskbar overflow (right-click only).
+* **Transparent:** Runs fully locally, doesn't connect to the internet and your files are only visible to you.
 
 ---
 
 ## 💾 Installation & Setup
 
-### For Users (Recommended)
+### For Users (Recommended, Binary)
 
-1.  Download the latest `NotionLink_vX.X.exe` from the **[Releases Page](https://github.com/YOUR_NAME/YOUR_REPO/releases)**.
-2.  Place the `.exe` in a permanent location (e.g., `C:\Program Files\NotionLink\NotionLink.exe`).
-3.  Run `NotionLink.exe`.
-4.  Follow the **First-Time Setup** steps below.
+1.  Download the latest `NotionLink_vX.X.exe` from the **[Releases Page](https://github.com/wladermisch/NotionLink/releases)**.
+2.  Create a folder, to store temporary and config files in a permanent location.
+3.  Place the `.exe` in the folder (e.g., `C:\Program Files\NotionLink\NotionLink.exe`).
+4.  Run `NotionLink.exe`.
+5.  Follow the **First-Time Setup** steps below.
 
 ### For Developers (from Source)
 
-1.  Clone this repository: `git clone https://github.com/YOUR_NAME/YOUR_REPO.git`
+1.  Clone this repository: `git clone https://github.com/wladermisch/NotionLink.git`
 2.  Create a virtual environment: `python -m venv .venv`
 3.  Activate it: `.venv\Scripts\activate`
 4.  Install dependencies:
@@ -60,6 +63,7 @@ Best of all, it can monitor entire folders and automatically add links for new f
     ```
 5.  Run the script: `python NotionLink.pyw`
 
+    Alternatively, you can install the "source" folder and execute the .pyw yourself (install dependencies first).
 ---
 
 ## ⚙️ How to Use
@@ -76,6 +80,8 @@ When you first launch the app, a welcome wizard will appear.
 3.  **Share:** Go to the Notion page(s) you want to use, click "..." (Top right) -> "Add connections" -> and select your "NotionLink" integration. **This step is mandatory!**
 4.  **Autostart:** Check the box if you want the app to start with Windows.
 5.  Click "Save and Start". The app will save and launch in your system tray.
+
+   Reminder: Keep your secret token to yourself hidden from anyone! Never upload your config file or post your secret in issues or any other place. If you fear that your token is compromised, the visit the page    again to renew the token. No logging file will write down your token.
 
 ### 2. The Tray Menu (Right-Click)
 
@@ -108,7 +114,7 @@ To make the app work automatically, you must set up mappings:
 * **Backend:** All background processes (HTTP server, Watchdog file observer, startup syncs) run in stable, separate standard Python `threading.Thread`s.
 * **Frontend:** The UI (dialogs, tray menu) is built entirely with **PySide6**.
 * **Configuration:** All settings, including your token and mappings, are stored locally in a `config.json` file in the same directory as the `.exe`.
-* **Stability:** Uses direct `win32gui` and `win32con` API calls to manage the tray menu's focus behavior, ensuring it works reliably even from the taskbar overflow.
+* **Stability:** We try our best to limit crashes or bugs. If you encounter something, submit a issue!
 
 ---
 
