@@ -45,12 +45,10 @@ Best of all, it can monitor entire folders and automatically add links for new f
 
 **This is very important to us.** To find and fix bugs, NotionLink uses an automated error reporting service called **Sentry**.
 
-* **What it does:** If the application crashes unexpectedly, Sentry automatically sends us an anonymous report about the crash. This helps us understand *what* went wrong so we can fix it in the next version.
-* **What about Privacy?** We do **not** send or collect any of your personal data. The reports **do not include** your Notion Token, your file paths, your IP address, or any other personally identifiable information. The report only contains the technical details of the code-level error and an anonymous machine ID.
+* **What it does:** If the application crashes unexpectedly, Sentry automatically sends us a **100% anonymous** report about the crash (e.g., "Error in line X"). This helps us fix bugs in future versions.
+* **What about Privacy?** We do **not** send or collect any of your personal data. The automated reports **do not include** your Notion Token, your file paths, your IP address, or any other personally identifiable information.
 * **What about Performance?** It does not affect the app's performance. It only runs for a split second if an error occurs and is otherwise completely inactive.
-* **Can I disable it?** Yes, you can disable this feature at any time in the `config.json` file by setting `"sentry_enabled": false`. 
-
-Helping us receive these bug reports is the best way you can contribute to improving the stability of NotionLink for everyone.
+* **Can I disable it?** Yes, you can disable this anonymous reporting at any time. You can uncheck the box during the initial setup, or later by setting `"sentry_enabled": false` in your `config.json` file.
 
 ---
 
@@ -89,7 +87,8 @@ When you first launch the app, a welcome wizard will appear.
 2.  **Paste Token:** Paste the secret token into the input field.
 3.  **Share:** Go to the Notion page(s) you want to use, click "..." (Top right) -> "Add connections" -> and select your "NotionLink" integration. **This step is mandatory!**
 4.  **Autostart:** Check the box if you want the app to start with Windows.
-5.  Click "Save and Start". The app will save and launch in your system tray.
+5.  **Error Reporting:** Leave the checkbox enabled to help us fix bugs anonymously.
+6.  Click "Save and Start". The app will save and launch in your system tray.
 
 > **Security Warning:**
 > Keep your secret token hidden! Never upload your `config.json` file or post your token in issues or any other public place. If you fear your token is compromised, visit the integrations page again to renew it. The app will never write your token to the log files.
@@ -118,11 +117,16 @@ To make the app work automatically, you must set up mappings:
 5.  Click "Save".
 6.  **IMPORTANT:** You must **Restart the application** after saving new mappings. This is required for the file watcher (`watchdog`) to start monitoring the new folders.
 
-### 4. Troubleshooting (Log Files)
+### 4. Troubleshooting & Submitting Bug Reports
 
-If you encounter a problem, you can find detailed logs in the same folder as your `NotionLink.exe`:
+If you encounter a problem, you can find detailed logs in the same folder as your `NotionLink.exe`.
+
 * `notionlink.log`: Contains general information and a history of app activity (e.g., "File synced", "Server started").
 * `error.log`: Contains details about any errors or crashes that have occurred.
+
+If you open a new [GitHub Issue](https://github.com/wladermisch/NotionLink/issues) to report a bug, **please manually attach the `error.log` file.**
+
+> **Privacy Note:** The `error.log` file *does* contain some system information (like your username, hostname, and machine ID) to help with debugging. This file **never** leaves your computer automatically. By manually attaching it to a GitHub issue, you are giving your consent to share this debugging information.
 
 ---
 
@@ -130,8 +134,8 @@ If you encounter a problem, you can find detailed logs in the same folder as you
 
 * **Backend:** All background processes (HTTP server, Watchdog file observer, startup syncs) run in stable, separate standard Python `threading.Thread`s.
 * **Frontend:** The UI (dialogs, tray menu) is built entirely with **PySide6**.
-* **Error Reporting:** Uncaught exceptions are automatically and anonymously sent to **Sentry** to help with debugging.
-* **Logging:** All application output is redirected to a robust `logging` system, writing to `notionlink.log` (for info) and `error.log` (for errors).
+* **Error Reporting:** Uncaught exceptions are automatically and **anonymously** sent to **Sentry** (if enabled) to help with debugging.
+* **Logging:** All application output is redirected to a robust `logging` system, writing to `notionlink.log` (for info) and `error.log` (for detailed errors, including PII).
 * **Configuration:** All settings, including your token and mappings, are stored locally in a `config.json` file.
 
 ---
