@@ -1,3 +1,4 @@
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/E1E21NYEKB)
 # NotionLink 🔗
 
 ![NotionLink Tray Menu](https://gdurl.com/gYfT)
