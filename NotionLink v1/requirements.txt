@@ -1,0 +1,8 @@
+pystray
+Pillow
+customtkinter
+pyperclip
+pyautogui
+notion-client
+watchdog
+pywin32
