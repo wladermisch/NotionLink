@@ -29,7 +29,6 @@ from watchdog.events import FileSystemEventHandler
 
 ctk.set_default_color_theme('green')
 
-
 config_file_path = "config.json"
 
 default_config = {
@@ -607,25 +606,57 @@ def quit_program(icon):
     global observer, root, httpd
 
     print("Quit command received. Shutting down...")
+    try:
+        if observer:
+            is_running = getattr(observer, "is_alive", lambda: False)()
+            if is_running:
+                observer.stop()
+                observer.join(timeout=2)
+                print("Observer stopped.")
+            else:
+                try:
+                    observer.stop()
+                except Exception:
+                    pass
+                print("Observer was not running; skip join.")
+    except Exception as e:
+        print(f"Error stopping observer: {e}")
 
-    if observer:
-        observer.stop()
-        observer.join()
-        print("Observer stopped.")
+    try:
+        if httpd:
+            httpd.shutdown()
+            try:
+                httpd.server_close()
+            except Exception:
+                pass
+            print("HTTP server stopped.")
+    except Exception as e:
+        print(f"Error shutting down HTTP server: {e}")
 
-    if httpd:
-        httpd.shutdown()
-        print("HTTP server stopped.")
+    try:
+        if icon:
+            icon.stop()
+            print("Tray icon stopped.")
+    except Exception as e:
+        print(f"Error stopping tray icon: {e}")
 
-    if icon:
-        icon.stop()
-        print("Tray icon stopped.")
+    try:
+        if root:
+            root.after(0, root.destroy)
+            print("GUI main loop signaled to stop.")
+    except Exception as e:
+        print(f"Error signaling GUI to stop: {e}")
 
-    if root:
-        root.after(0, root.destroy)
-        print("GUI main loop signaled to stop.")
+    try:
+        log_file.close()
+    except Exception:
+        pass
 
-    log_file.close()
+    time.sleep(0.5)
+    live = [t for t in threading.enumerate() if t is not threading.current_thread()]
+    if any(not t.daemon for t in live):
+        print("Threads still alive after shutdown, forcing process exit.")
+        os._exit(0)
 
 
 def setup_tray_icon():
@@ -664,6 +695,7 @@ def start_server():
 
 if __name__ == '__main__':
 
+    print(f"Application starting. PID={os.getpid()}, base_path={path}")
     ctk.set_appearance_mode("dark")
 
     if not config.get("tutorial_completed", False):
@@ -685,6 +717,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     observer = Observer()
+    print("Observer created.")
     mappings = config.get("folder_mappings", [])
 
     if mappings:
@@ -752,8 +785,11 @@ if __name__ == '__main__':
     notion_check_thread = threading.Thread(target=check_notion_connection, daemon=True)
 
     tray_thread.start()
+    print(f"Tray thread started: {tray_thread.name}")
     server_thread.start()
+    print(f"Server thread started: {server_thread.name}")
     notion_check_thread.start()
+    print(f"Notion check thread started (daemon={notion_check_thread.daemon}): {notion_check_thread.name}")
 
     print("Starting main GUI loop (root.mainloop())...")
     root.mainloop()
