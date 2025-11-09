@@ -1,27 +1,28 @@
 ﻿<!DOCTYPE html>
-<html data-wf-page="690e217aee7c30e4a65996c6"
+<html data-wf-page="690e217aee7c30e4a65996c7"
   data-wf-site="690e2179ee7c30e4a65995f1" data-wf-status="1" lang="en">
 
   <head>
     <meta charset="utf-8" />
-    <title>NotionLink - Changelog</title>
+    <title>NotionLink Documentation</title>
     <meta
-      content="NotionLink version history and updates"
+      content="NotionLink - Sync your local files with Notion"
       name="description" />
-    <meta content="NotionLink - Changelog" property="og:title" />
+    <meta content="NotionLink Documentation" property="og:title" />
     <meta
-      content="NotionLink version history and updates"
+      content="NotionLink - Sync your local files with Notion"
       property="og:description" />
     <meta content="../images/open-20graph.png" property="og:image" />
-    <meta content="NotionLink - Changelog"
+    <meta content="NotionLink Documentation"
       property="twitter:title" />
     <meta
-      content="NotionLink version history and updates"
+      content="NotionLink - Sync your local files with Notion"
       property="twitter:description" />
     <meta content="../images/open-20graph.png" property="twitter:image" />
     <meta property="og:type" content="website" />
     <meta content="summary_large_image" name="twitter:card" />
     <meta content="width=device-width, initial-scale=1" name="viewport" />
+    
     <link href="../css/notionlink-1bd77c.webflow.shared.c3316114c.css"
       rel="stylesheet" type="text/css" />
     <script type="text/javascript">
@@ -48,6 +49,7 @@
   </head>
 
   <body>
+    
     <div class="page-wrapper">
       <div class="navbar">
         <div class="navbar_component">
@@ -64,62 +66,23 @@
             <div class="w-layout-blockcontainer container-xsmall w-container">
               <div class="resources_component">
                 <div class="resources_section">
-                  <h1 class="heading-style-h5">Changelog</h1>
+                  <h1 class="heading-style-h5">Instructions</h1>
                   <div class="resources_note">
                     <div class="resources_note-content large">
-                      <p class="text-size-small">You can check here all the
-                        updates and bug fixes made for NotionLink.</p>
+                      <p class="text-size-small">Watch the video to learn how to
+                        make major edits on the template.</p>
                     </div>
                   </div>
                 </div>
-                <div id="section-updates" class="resources_section">
-                  <div class="resources_changelog-list">
-                    
-                    <div class="resources_changelog-item">
-                      <p>v4.6 — Nov 2025</p>
-                      <ul role="list">
-                        <li><p><strong>Full File Lifecycle Sync (Database Mappings):</strong> NotionLink now actively monitors and syncs all file operations. On Create: adds new file to Notion. On Delete: archives the corresponding Notion page. On Rename/Move: updates "Name" and "Link" properties to prevent dead links and duplicates.</p></li>
-                        <li><p><strong>Dynamic Database Properties (1-Click Setup):</strong> The app automatically detects if required properties are missing and creates them (Name, Link, Created, Modified, Size) with a single API call. No more manual property setup.</p></li>
-                        <li><p><strong>Reliable File Opening:</strong> Replaced complex pyautogui/win32com method with a simple, robust os.startfile call. Fixes bugs where files wouldn't open correctly.</p></li>
-                        <li><p><strong>Massive Code Refactor:</strong> Professionally refactored from a 2,600+ line monolithic file into a clean src/ package with logical modules (core.py, notion.py, server.py, ui_main.py, ui_dialogs.py, etc.).</p></li>
-                      </ul>
-                    </div>
-
-                    <div class="resources_changelog-item">
-                      <p>v4.5 — 2025</p>
-                      <ul role="list">
-                        <li><p>Stable version with database syncing capabilities.</p></li>
-                      </ul>
-                    </div>
-
-                    <div class="resources_changelog-item">
-                      <p>v4.0 — 2024</p>
-                      <ul role="list">
-                        <li><p>Major dashboard overhaul: Introduced modern 2-column PySide6 dashboard with live log view.</p></li>
-                      </ul>
-                    </div>
-
-                    <div class="resources_changelog-item">
-                      <p>v3.0 — 2024</p>
-                      <ul role="list">
-                        <li><p>Added first basic dashboard for managing settings.</p></li>
-                      </ul>
-                    </div>
-
-                    <div class="resources_changelog-item">
-                      <p>v2.0 — 2023</p>
-                      <ul role="list">
-                        <li><p>GUI Overhaul: Replaced native context menu with PySide6-based UI to add dark mode support.</p></li>
-                      </ul>
-                    </div>
-
-                    <div class="resources_changelog-item">
-                      <p>v1.0 — Sep 2024</p>
-                      <ul role="list">
-                        <li><p>Initial release with basic functionality and Windows "Send To" context menu.</p></li>
-                      </ul>
-                    </div>
-
+                <div id="section-assets" class="resources_section">
+                  <div class="resources_video-wrap">
+                    <div style="padding-top:56.17021276595745%"
+                      class="w-embed-youtubevideo resources_video"><iframe
+                        src="https://www.youtube.com/embed/4fb7OJKB7ys?rel=0&amp;controls=1&amp;autoplay=0&amp;mute=0&amp;start=0"
+                        frameBorder="0"
+                        style="position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:auto"
+                        allow="autoplay; encrypted-media" allowfullscreen=""
+                        title="NotionLink Documentation"></iframe></div>
                   </div>
                 </div>
               </div>
@@ -139,7 +102,7 @@
               </div>
               <div class="footer_links">
                 <div class="footer_legal-links">
-                  <a href="instructions.html" class="footer_legal-link">Instructions</a><a href="style-guide.html" class="footer_legal-link">Style Guide</a><a href="licenses.html" class="footer_legal-link">Licenses</a><a href="changelog.html" aria-current="page" class="footer_legal-link w--current">Changelog</a>
+                  <a href="instructions.html" aria-current="page" class="footer_legal-link w--current">Instructions</a><a href="style-guide.html" class="footer_legal-link">Style Guide</a><a href="licenses.html" class="footer_legal-link">Licenses</a><a href="changelog.html" class="footer_legal-link">Changelog</a>
                 </div>
                 <div class="footer_social-links">
                   <a href="https://facebook.com" class="footer_social-link w-inline-block"><img loading="lazy" src="../images/icon-face.svg" alt="" class="footer_social-icon"/></a><a href="https://instagram.com" class="footer_social-link w-inline-block"><img loading="lazy" src="../images/icon-insta.svg" alt="" class="footer_social-icon"/></a><a href="https://linkedin.com" class="footer_social-link w-inline-block"><img loading="lazy" src="../images/icon-linkedin.svg" alt="" class="footer_social-icon"/></a><a href="https://x.com" class="footer_social-link w-inline-block"><img loading="lazy" src="../images/icon-x.svg" alt="" class="footer_social-icon"/></a>
