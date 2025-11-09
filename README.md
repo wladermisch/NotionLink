@@ -85,6 +85,10 @@ If you open a new [GitHub Issue](https://github.com/wladermisch/NotionLink/issue
 
 ---
 
+## [Changelog](https://wladermisch.github.io/NotionLink/resources/changelog.html)
+
+**You can access the changelog on the [github page](https://wladermisch.github.io/NotionLink/resources/changelog.html).**
+
 ## 📋 Features
 
 * **Runs Silently in the Tray:** Stays out of your way and is ready when you need it.
