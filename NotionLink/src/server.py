@@ -1,8 +1,3 @@
-# NotionLink - Server & File Sync Module
-# Copyright (c) 2025 wladermisch. All Rights Reserved.
-#
-# HTTP server, file system monitoring, and Windows autostart management
-
 import os
 import sys
 import socket

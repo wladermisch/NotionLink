@@ -1,8 +1,3 @@
-# NotionLink - UI Dialogs Module
-# Copyright (c) 2025 wladermisch. All Rights Reserved.
-#
-# All dialog windows and helper widgets
-
 import os
 import json
 import threading
@@ -694,10 +689,10 @@ class ConvertPathWindow(BaseDialog):
 
 
 class FeedbackDialog(BaseDialog):
-    # Dialog for sending feedback via Sentry.
+    # Dialog for sending alpha feedback via Sentry.
     
     def __init__(self, tray_app_instance):
-        super().__init__("Send Feedback")
+        super().__init__("Send Feedback (Alpha)")
         self.tray_app = tray_app_instance
         self.setMinimumWidth(400)
 

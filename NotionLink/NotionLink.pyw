@@ -1,21 +1,51 @@
-# NotionLink - wladermisch on GitHub
-
 import sys
 import os
 import json
 import threading
 import ctypes
-from PySide6.QtWidgets import QApplication, QMessageBox, QDialog
-from PySide6.QtGui import QIcon
-from PySide6.QtCore import QTimer
 
-from src.core import (APP_VERSION, config, config_file_path, logger, 
-                      init_sentry_if_enabled, exception_handler)
-from src.notion import check_notion_status_once, run_startup_sync
-from src.server import start_server_blocking, TRAY_ICON_ICO
-from src.ui_styles import DARK_STYLESHEET
-from src.ui_dialogs import InitialSetupDialog
-from src.ui_main import NotionLinkTrayApp
+try:
+    from PySide6.QtWidgets import QApplication, QMessageBox, QDialog
+    from PySide6.QtGui import QIcon
+    from PySide6.QtCore import QTimer
+except ImportError as e:
+    try:
+        ctypes.windll.user32.MessageBoxW(
+            0, 
+            f"Critical Error: Failed to load PySide6 (GUI Library).\n\n"
+            f"Details: {e}\n\n"
+            "This usually means the Python environment is missing dependencies.\n"
+            "Please ensure you have installed the requirements:\n"
+            "pip install -r requirements.txt", 
+            "NotionLink - Launch Error", 
+            0x10
+        )
+    except Exception:
+        pass
+    sys.exit(1)
+
+try:
+    from src.core import (APP_VERSION, config, config_file_path, logger, 
+                        init_sentry_if_enabled, exception_handler)
+    from src.notion import check_notion_status_once, run_startup_sync
+    from src.server import start_server_blocking, TRAY_ICON_ICO
+    from src.ui_styles import DARK_STYLESHEET
+    from src.ui_dialogs import InitialSetupDialog
+    from src.ui_main import NotionLinkTrayApp
+except ImportError as e:
+    app_dummy = QApplication(sys.argv)
+    error_box = QMessageBox()
+    error_box.setIcon(QMessageBox.Critical)
+    error_box.setWindowTitle("NotionLink - Dependency Error")
+    error_box.setText("A required Python component is missing.")
+    error_box.setInformativeText(
+        f"Error Details: {e}\n\n"
+        "Please check that all dependencies are installed properly.\n"
+        "Try running: pip install -r requirements.txt"
+    )
+    error_box.setStandardButtons(QMessageBox.Ok)
+    error_box.exec()
+    sys.exit(1)
 
 
 def main():
@@ -33,7 +63,6 @@ def main():
     missing_files = [f for f in required_files if not os.path.exists(f)]
     
     if missing_files:
-        # Show error dialog
         temp_app = QApplication(sys.argv)
         error_box = QMessageBox()
         error_box.setIcon(QMessageBox.Critical)
@@ -71,21 +100,21 @@ def main():
     
     app.tray_app = NotionLinkTrayApp(app)
     
-    # Onboarding wizard
     if not config.get("tutorial_completed", False):
         print("First run detected. Starting setup wizard...")
         
         alpha_msg_box = QMessageBox()
         alpha_msg_box.setWindowIcon(QIcon(TRAY_ICON_ICO))
         alpha_msg_box.setStyleSheet(DARK_STYLESHEET.replace("QMenu", "QMessageBox").replace("QDialog", "QMessageBox"))
-        alpha_msg_box.setIcon(QMessageBox.Information)
-        alpha_msg_box.setWindowTitle(f"NotionLink v{APP_VERSION}")
-        alpha_msg_box.setText(f"Welcome to NotionLink v{APP_VERSION}!")
+        alpha_msg_box.setIcon(QMessageBox.Warning)
+        alpha_msg_box.setWindowTitle("NotionLink Closed Alpha")
+        alpha_msg_box.setText(f"Welcome to the NotionLink {APP_VERSION} Alpha!")
         alpha_msg_box.setInformativeText(
-            "This is the latest release.\n\n"
-            "You can enable anonymous error reports in the setup wizard to help improve NotionLink. "
+            "This is a private, pre-release version for testing only. "
+            "<b>Please do not share or distribute this file.</b>\n\n"
+            "To help find and fix bugs, you can enable **anonymous error reports** in the setup wizard. "
             "These reports do NOT include your Notion Token, file paths, or any personal data.\n\n"
-            "Thank you for using NotionLink!"
+            "Thank you for helping test!"
         )
         alpha_msg_box.setStandardButtons(QMessageBox.Ok)
         alpha_msg_box.exec()

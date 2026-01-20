@@ -1,5 +1,3 @@
-# NotionLink core: configuration, constants, logging, and error handling
-
 import sys
 import os
 import json
@@ -12,9 +10,7 @@ import socket
 import uuid
 from collections import defaultdict
 
-# Constants & paths
-
-APP_VERSION = "4.7"  # Feature update: Offline mode, bugfixes, improved rename handling
+APP_VERSION = "4.8.0"
 
 config_file_path = "config.json"
 
@@ -29,23 +25,21 @@ default_config = {
     "sentry_enabled": True
 }
 
-# globals
+# Globals
 observer = None
 httpd = None
 link_cache = {}
 notion_status = "Notion: Checking..."
 notification_batch = defaultdict(list)
-notified_errors = set()  # Track errors we've already shown to prevent duplicates
-file_to_page_map = {}  # Track file paths to Notion page IDs for lifecycle sync
-offline_mode = False  # Global flag for offline mode
-last_network_notification_time = 0  # Timestamp of last network error notification
+notified_errors = set()
+file_to_page_map = {}
+offline_mode = False
+last_network_notification_time = 0
 
-# Global state for connection recovery
-pending_uploads = []  # Queue for uploads waiting for connection
-pending_uploads_lock = threading.Lock()  # Lock for thread-safe access to pending_uploads
-is_recovering_connection = False  # Flag to indicate if recovery loop is running
+pending_uploads = []
+pending_uploads_lock = threading.Lock()
+is_recovering_connection = False
 
-# Determine application path
 if getattr(sys, 'frozen', False):
     path = os.path.dirname(sys.executable)
 else:
@@ -55,14 +49,12 @@ log_dir = path
 notionlog_path = os.path.join(log_dir, "notionlink.log")
 errorlog_path = os.path.join(log_dir, "error.log")
 
-# Sentry SDK
 sentry_sdk = None
 
-# logging
 logger = logging.getLogger("notionlink")
 logger.setLevel(logging.INFO)
 
-info_handler = RotatingFileHandler(notionlog_path, maxBytes=5*1024*1024, backupCount=5, encoding="utf-8")
+info_handler = RotatingFileHandler(notionlog_path, maxBytes=5*1024*1024, backupCount=1, encoding="utf-8")
 info_handler.setLevel(logging.INFO)
 
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(name)s: %(message)s')
@@ -73,7 +65,6 @@ logger.addHandler(info_handler)
 error_logger = logging.getLogger("notionlink.error")
 error_logger.setLevel(logging.ERROR)
 
-# lazy attach state
 _error_handler_attached = False
 _error_handler_lock = threading.Lock()
 
@@ -118,41 +109,9 @@ class StreamToLogger:
         pass
 
 
-# Redirect stdout and stderr to logger
 sys.stdout = StreamToLogger(logger, logging.INFO)
 sys.stderr = StreamToLogger(error_logger, logging.ERROR)
 
-# =============================================================================
-# ERROR HANDLING
-# =============================================================================
-
-def is_user_error(exc_value):
-    # Determine if an error is a user configuration issue rather than a bug.
-    error_str = str(exc_value).lower()
-    
-    # File not found / missing installation files
-    if isinstance(exc_value, FileNotFoundError):
-        if 'assets' in error_str or 'logo.ico' in error_str:
-            return True
-    
-    # Port/permission errors
-    if isinstance(exc_value, (OSError, PermissionError)):
-        if hasattr(exc_value, 'errno') and exc_value.errno in (10013, 10048, 48, 98):
-            return True
-        if 'port' in error_str and ('already in use' in error_str or 'bind' in error_str or 'address already in use' in error_str):
-            return True
-    
-    # Notion API errors
-    if '404' in error_str or 'could not find block' in error_str or 'could not find page' in error_str:
-        return True
-    if '401' in error_str or 'unauthorized' in error_str or 'invalid token' in error_str:
-        return True
-    if '403' in error_str or 'forbidden' in error_str or 'not shared' in error_str:
-        return True
-    if 'api_error' in error_str and ('validation' in error_str or 'invalid' in error_str):
-        return True
-    
-    # Network / Timeout errors (User environment issues)
 NETWORK_ERROR_STRINGS = [
     'timeout', 'timed out', 'connection', 'handshake', 'getaddrinfo', 
     'name resolution', 'host', 'socket', 'client', 'remote', 
@@ -160,8 +119,11 @@ NETWORK_ERROR_STRINGS = [
 ]
 
 def is_user_error(exc_value):
-    # Determine if an error is a user configuration issue rather than a bug.
     error_str = str(exc_value).lower()
+    
+    # Dependencies missing
+    if isinstance(exc_value, (ImportError, ModuleNotFoundError)):
+        return True
     
     # File not found / missing installation files
     if isinstance(exc_value, FileNotFoundError):
@@ -193,7 +155,6 @@ def is_user_error(exc_value):
 
 
 def exception_handler(exc_type, exc_value, exc_tb):
-    # Global exception handler that logs all errors and sends bugs to Sentry.
     global sentry_sdk
     
     tb = ''.join(traceback.format_exception(exc_type, exc_value, exc_tb))
@@ -237,7 +198,6 @@ def exception_handler(exc_type, exc_value, exc_tb):
 
 
 def init_sentry_if_enabled():
-    # Initialize Sentry SDK if enabled in config.
     global sentry_sdk
     
     try:
@@ -258,21 +218,16 @@ def init_sentry_if_enabled():
             release=f"notionlink@{APP_VERSION}",
         )
         sentry_sdk = sentry
-        logger.info(f'Sentry initialized for NotionLink v{APP_VERSION}.')
+        logger.info(f'Sentry initialized for Alpha Build {APP_VERSION}.')
             
     except Exception as e:
         logger.error(f'Sentry init failed: {e}')
 
 
-# Set global exception handler
 sys.excepthook = exception_handler
 
-# =============================================================================
-# CONFIGURATION MANAGEMENT
-# =============================================================================
 
 def migrate_config_if_needed(config_obj):
-    # Migrate old config structure to new format.
     from .notion import extract_id_and_title_from_link, get_notion_title
     
     if "folder_mappings" in config_obj:
@@ -310,7 +265,6 @@ def migrate_config_if_needed(config_obj):
 
 
 def load_config():
-    # Load configuration from file or create default.
     global config
     
     config_path = os.path.join(path, config_file_path)
@@ -356,12 +310,7 @@ def load_config():
     return config
 
 
-# =============================================================================
-# UTILITY FUNCTIONS
-# =============================================================================
-
 def resource_path(relative_path):
-    # Get absolute path to resource, works for dev and for PyInstaller.
     try:
         base_path = sys._MEIPASS
     except Exception:
@@ -369,6 +318,5 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 
-# Initialize config on module import
 config = {}
 load_config()

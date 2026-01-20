@@ -1,8 +1,3 @@
-# NotionLink - Notion API Module
-# Copyright (c) 2025 wladermisch. All Rights Reserved.
-#
-# All Notion API operations and business logic
-
 import re
 import time
 import threading
@@ -23,7 +18,6 @@ import src.core as core_module  # Import core module to access offline_mode flag
 
 
 def retry_api_call(func, max_retries=3, backoff_factor=2):
-    # Retry a function call on network/timeout errors.
     last_exception = None
     for attempt in range(max_retries):
         try:
@@ -43,7 +37,6 @@ def retry_api_call(func, max_retries=3, backoff_factor=2):
 
 
 def get_notion_title(notion_id, token, is_db=False):
-    # Fetch page or database title using Notion API.
     try:
         notion = Client(auth=token)
         if is_db:
@@ -76,7 +69,6 @@ def get_notion_title(notion_id, token, is_db=False):
 
 
 def extract_id_and_title_from_link(text_input):
-    # Extract Notion ID and title from a Notion link or ID string.
     if not text_input:
         return None
     
@@ -370,6 +362,8 @@ def sync_file_to_notion(full_file_path, config_data, mapping_config, mapping_typ
             if tray_app:
                 if is_batch:
                     notification_batch[notion_title].append(filename)
+                    if hasattr(tray_app, 'reset_notification_timer'):
+                        tray_app.reset_notification_timer()
                 else:
                     tray_app.tray_icon.showMessage(
                         "NotionLink: Sync Success",

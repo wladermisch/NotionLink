@@ -375,13 +375,13 @@ class MainDashboardWindow(QMainWindow):
 
 
 class NotionLinkTrayApp(QObject):
-    # System tray application controller
     
     status_updated = Signal(str)
     server_error_signal = Signal(str)
     user_error_signal = Signal(str)
     op_success_signal = Signal()
     offline_mode_signal = Signal()
+    notification_timer_signal = Signal()
     
     def __init__(self, app):
         super().__init__()
@@ -446,14 +446,18 @@ class NotionLinkTrayApp(QObject):
         self.tray_icon.activated.connect(self.on_tray_icon_activated)
         self.tray_icon.show()
         
-        # Start notification batch timer
+        # Start notification batch timer (SingleShot for debouncing)
         self.notification_timer = QTimer(self)
+        self.notification_timer.setSingleShot(True)
         self.notification_timer.timeout.connect(self.process_notification_batch)
-        self.notification_timer.start(5000)
+        self.notification_timer_signal.connect(lambda: self.notification_timer.start(5000))
         
         # Connect status signal
         self.status_updated.connect(self.update_status_ui)
         self.offline_mode_signal.connect(self.on_offline_mode_activated)
+        
+    def reset_notification_timer(self):
+        self.notification_timer_signal.emit()
         
     def process_notification_batch(self):
         # Process batched sync notifications
