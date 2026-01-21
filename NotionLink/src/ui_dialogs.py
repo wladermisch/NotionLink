@@ -3,6 +3,7 @@ import json
 import threading
 import webbrowser
 import traceback
+import urllib.request
 from PySide6.QtWidgets import (
     QDialog, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout,
     QListWidget, QListWidgetItem, QCheckBox, QTextEdit, QFileDialog,
@@ -13,7 +14,7 @@ from PySide6.QtCore import Signal, Qt, QObject, QTimer, QThread, QSize
 import pyperclip as clip
 from notion_client import Client
 
-from .core import config, config_file_path, logger, sentry_sdk, link_cache, notionlog_path, resource_path
+from .core import config, config_file_path, logger, sentry_sdk, link_cache, notionlog_path, resource_path, APP_VERSION
 from .notion import get_notion_title, extract_id_and_title_from_link
 from .server import manage_autostart, TRAY_ICON_ICO
 from .ui_styles import DARK_STYLESHEET
@@ -57,14 +58,6 @@ class InitialSetupDialog(BaseDialog):
         link_button.clicked.connect(lambda: webbrowser.open_new("https://www.notion.so/my-integrations"))
         layout.addWidget(link_button)
         layout.addWidget(QLabel("2. Click 'New integration', give it a name (e.g., 'NotionLink'),\nand copy the 'Internal Integration Token' (Secret)."), alignment=Qt.AlignLeft)
-        runtime_note = QLabel(
-            "Important: NotionLink must be running to open files from the generated local links. "
-            "If the app is not running, those links will not resolve."
-            "If demand is high enough, offline link resolution may be added in a future update."
-        )
-        runtime_note.setWordWrap(True)
-        runtime_note.setStyleSheet("color: #ffcc66; font-size: 9pt; margin-top: 6px;")
-        layout.addWidget(runtime_note, alignment=Qt.AlignLeft)
         layout.addWidget(QLabel("3. Paste your 'Internal Integration Token' (Secret) here:"), alignment=Qt.AlignLeft)
         
         self.token_entry = QLineEdit(self)
@@ -748,3 +741,101 @@ class FeedbackDialog(BaseDialog):
             print(f"Error sending Sentry feedback: {e}")
             traceback.print_exc()
             self.status_label.setText("Could not send feedback. Check logs.")
+
+# =============================================================================
+# UPDATE CHECKER
+# =============================================================================
+
+class UpdateCheckThread(QThread):
+    update_available = Signal(str, str)  # latest_version, url
+
+    def run(self):
+        try:
+            url = 'https://api.github.com/repos/wladermisch/NotionLink/releases/latest'
+            headers = {'User-Agent': f'NotionLink/{APP_VERSION}'}
+            req = urllib.request.Request(url, headers=headers)
+            
+            with urllib.request.urlopen(req) as response:
+                if response.status == 200:
+                    data = json.loads(response.read().decode())
+                    tag_name = data.get('tag_name', '').strip()
+                    # Remove 'v' prefix if present
+                    latest_version = tag_name.lstrip('v')
+                    
+                    if self._is_newer(latest_version, APP_VERSION):
+                        self.update_available.emit(latest_version, data.get('html_url', 'https://github.com/wladermisch/NotionLink/releases/latest'))
+        except Exception as e:
+            # Log error but don't disturb user
+            print(f'Update check failed: {e}')
+
+    def _is_newer(self, latest, current):
+        try:
+            # Simple semantic versioning check
+            l_parts = [int(p) for p in latest.split('.')]
+            c_parts = [int(p) for p in current.split('.')]
+            return l_parts > c_parts
+        except Exception:
+            return False
+
+
+class UpdateAvailableDialog(BaseDialog):
+    def __init__(self, current_v, latest_v, url, parent=None):
+        super().__init__('Update Available', parent)
+        self.url = url
+        self.setFixedSize(450, 300)
+        
+        layout = QVBoxLayout(self)
+        layout.setSpacing(15)
+        layout.setContentsMargins(20, 20, 20, 20)
+        
+        # Header
+        header_lbl = QLabel('A new version of NotionLink is available!')
+        header_lbl.setStyleSheet('font-size: 14pt; font-weight: bold; color: #ffffff;')
+        header_lbl.setWordWrap(True)
+        layout.addWidget(header_lbl)
+        
+        # Version Info
+        info_frame = QFrame()
+        info_frame.setStyleSheet('background-color: #2a2a2a; border-radius: 5px; padding: 10px;')
+        info_layout = QVBoxLayout(info_frame)
+        
+        curr_lbl = QLabel(f'Current Version: <span style=\'color: #aaaaaa;\'>{current_v}</span>')
+        curr_lbl.setStyleSheet('font-size: 11pt;')
+        
+        new_lbl = QLabel(f'Latest Version: <span style=\'color: #4CAF50; font-weight: bold;\'>{latest_v}</span>')
+        new_lbl.setStyleSheet('font-size: 11pt;')
+        
+        info_layout.addWidget(curr_lbl)
+        info_layout.addWidget(new_lbl)
+        layout.addWidget(info_frame)
+        
+        # Message
+        msg_lbl = QLabel('It is recommended to update for the latest features and fixes.')
+        msg_lbl.setWordWrap(True)
+        msg_lbl.setStyleSheet('color: #cccccc; font-size: 10pt;')
+        layout.addWidget(msg_lbl)
+        
+        layout.addStretch()
+        
+        # Buttons
+        btns_layout = QHBoxLayout()
+        btns_layout.addStretch()
+        
+        cancel_btn = QPushButton('Remind Me Later')
+        cancel_btn.setCursor(Qt.PointingHandCursor)
+        cancel_btn.setStyleSheet('background-color: #444; color: #ccc; border: none; padding: 8px 15px; border-radius: 3px;')
+        cancel_btn.clicked.connect(self.reject)
+        btns_layout.addWidget(cancel_btn)
+        
+        update_btn = QPushButton('Install Version ' + latest_v)
+        update_btn.setCursor(Qt.PointingHandCursor)
+        update_btn.setStyleSheet('background-color: #2e8b57; color: white; font-weight: bold; padding: 8px 15px; border-radius: 3px;')
+        update_btn.clicked.connect(self.open_url)
+        btns_layout.addWidget(update_btn)
+        
+        layout.addLayout(btns_layout)
+
+    def open_url(self):
+        webbrowser.open(self.url)
+        self.accept()
+

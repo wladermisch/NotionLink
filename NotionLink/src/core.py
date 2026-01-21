@@ -10,7 +10,7 @@ import socket
 import uuid
 from collections import defaultdict
 
-APP_VERSION = "4.8.0"
+APP_VERSION = "4.8.3"
 
 config_file_path = "config.json"
 

@@ -103,22 +103,6 @@ def main():
     if not config.get("tutorial_completed", False):
         print("First run detected. Starting setup wizard...")
         
-        alpha_msg_box = QMessageBox()
-        alpha_msg_box.setWindowIcon(QIcon(TRAY_ICON_ICO))
-        alpha_msg_box.setStyleSheet(DARK_STYLESHEET.replace("QMenu", "QMessageBox").replace("QDialog", "QMessageBox"))
-        alpha_msg_box.setIcon(QMessageBox.Warning)
-        alpha_msg_box.setWindowTitle("NotionLink Closed Alpha")
-        alpha_msg_box.setText(f"Welcome to the NotionLink {APP_VERSION} Alpha!")
-        alpha_msg_box.setInformativeText(
-            "This is a private, pre-release version for testing only. "
-            "<b>Please do not share or distribute this file.</b>\n\n"
-            "To help find and fix bugs, you can enable **anonymous error reports** in the setup wizard. "
-            "These reports do NOT include your Notion Token, file paths, or any personal data.\n\n"
-            "Thank you for helping test!"
-        )
-        alpha_msg_box.setStandardButtons(QMessageBox.Ok)
-        alpha_msg_box.exec()
-        
         wizard = InitialSetupDialog(app.tray_app) 
         if wizard.exec() != QDialog.Accepted:
             print("Setup not completed. Exiting.")

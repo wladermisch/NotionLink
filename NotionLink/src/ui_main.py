@@ -25,7 +25,7 @@ from .ui_styles import DARK_STYLESHEET
 from .ui_dialogs import (InitialSetupDialog, ManageTokenWindow, 
                          EditMappingDialog, ManageMappingsListDialog, 
                          ManualUploadWindow, ConvertPathWindow, FeedbackDialog, 
-                         LogWatcher)
+                         LogWatcher, UpdateAvailableDialog, UpdateCheckThread)
 
 
 class MainDashboardWindow(QMainWindow):
@@ -42,13 +42,20 @@ class MainDashboardWindow(QMainWindow):
         # Initialize UI
         self.init_ui()
         
-        # Start log watcher (auto-starts when initialized)
-        self.log_watcher = LogWatcher(logger.handlers[0].baseFilename)
-        self.log_watcher.new_log_line.connect(self.append_log_line)
+        # Start log watcher in a separate thread/timer to avoid blocking UI init
+        QTimer.singleShot(100, self.start_log_watcher)
         
         # Connect to tray app signals for status updates
         if self.tray_app:
             self.tray_app.status_updated.connect(self.update_token_status)
+    
+    def start_log_watcher(self):
+        try:
+            # Start log watcher (auto-starts when initialized)
+            self.log_watcher = LogWatcher(logger.handlers[0].baseFilename)
+            self.log_watcher.new_log_line.connect(self.append_log_line)
+        except Exception as e:
+            print(f"Failed to start log watcher: {e}")
             self.tray_app.server_error_signal.connect(self.update_status_panel_error)
             self.tray_app.user_error_signal.connect(self.update_status_panel_warning)
             self.tray_app.op_success_signal.connect(self.reset_status_panel)
@@ -426,20 +433,7 @@ class NotionLinkTrayApp(QObject):
         self.add_menu_action("Convert Path to Link", self.show_convert_path)
         self.add_menu_action("Manual Upload", self.show_manual_upload)
         self.menu.addSeparator()
-        self.add_menu_action("Page Mappings", self.show_page_mappings)
-        self.add_menu_action("Database Mappings", self.show_database_mappings)
-        self.add_menu_action("Notion Token", self.show_token)
-        self.menu.addSeparator()
         
-        # Settings
-        self.autostart_action = QAction("Start with Windows", self)
-        self.autostart_action.setCheckable(True)
-        self.autostart_action.setChecked(config.get("autostart_with_windows", False))
-        self.autostart_action.toggled.connect(self.toggle_autostart)
-        self.menu.addAction(self.autostart_action)
-        
-        self.add_menu_action("Send Feedback", self.show_feedback_dialog)
-        self.menu.addSeparator()
         self.add_menu_action("Quit", self.quit_app)
         
         self.tray_icon.setContextMenu(self.menu)
@@ -455,6 +449,15 @@ class NotionLinkTrayApp(QObject):
         # Connect status signal
         self.status_updated.connect(self.update_status_ui)
         self.offline_mode_signal.connect(self.on_offline_mode_activated)
+        
+        # Check for updates
+        self.update_thread = UpdateCheckThread()
+        self.update_thread.update_available.connect(self.show_update_dialog)
+        QTimer.singleShot(3000, self.update_thread.start)
+        
+    def show_update_dialog(self, latest_version, url):
+        dialog = UpdateAvailableDialog(APP_VERSION, latest_version, url)
+        dialog.exec()
         
     def reset_notification_timer(self):
         self.notification_timer_signal.emit()
