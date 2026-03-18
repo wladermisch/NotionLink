@@ -175,6 +175,19 @@ class NotionFileHandler(FileSystemEventHandler):
     def on_created(self, event):
         # handle file creation events
         if event.is_directory:
+            if self.mapping_config.get("folder_links", False):
+                folder_path = event.src_path
+                folder_name = os.path.basename(folder_path)
+                print(f"New folder detected by watcher: {folder_path}")
+                sync_file_to_notion(
+                    folder_path,
+                    self.config_data,
+                    self.mapping_config,
+                    self.mapping_type,
+                    self.tray_app,
+                    is_batch=True
+                )
+                print(f"Folder link sync queued: {folder_name}")
             return
         
         filepath = event.src_path

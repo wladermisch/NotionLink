@@ -705,11 +705,10 @@ class NotionLinkTrayApp(QObject):
                     path = os.path.expandvars(folder_path)
                     if os.path.isdir(path):
                         event_handler = NotionFileHandler(config, mapping, mapping_type, self)
-                        # Watch only the top-level folder (non-recursive) so files dropped as
-                        # nested folders are not automatically synced. This prevents syncing
-                        # files that are placed inside a subfolder of the watched folder.
-                        observer.schedule(event_handler, path, recursive=False)
-                        print(f"--> Watching (non-recursive): {path} -> {mapping_type} ID: ...{notion_id[-6:]}")
+                        recursive_watch = bool(mapping.get("folder_discovery", False))
+                        observer.schedule(event_handler, path, recursive=recursive_watch)
+                        mode = "recursive" if recursive_watch else "non-recursive"
+                        print(f"--> Watching ({mode}): {path} -> {mapping_type} ID: ...{notion_id[-6:]}")
             if observer.emitters:
                 observer.start()
                 print("File watcher(s) started.")
@@ -742,26 +741,47 @@ class NotionLinkTrayApp(QObject):
             
             files_uploaded_count = 0
             handler = NotionFileHandler(config, mapping_config, mapping_type, self)
-            
-            for filename in os.listdir(folder_path):
-                full_file_path = os.path.join(folder_path, filename)
-                if os.path.isfile(full_file_path):
-                    try:
-                        ignore_exts = handler.mapping_config.get("ignore_extensions", [])
-                        if any(fnmatch.fnmatch(filename, p) for p in ignore_exts):
-                            print(f"Skipping (ext filter): {filename}")
-                            continue
-                        
-                        ignore_files = handler.mapping_config.get("ignore_files", [])
-                        if any(fnmatch.fnmatch(filename, p) for p in ignore_files):
-                            print(f"Skipping (file/wildcard filter): {filename}")
-                            continue
-                    except Exception as e:
-                        print(f"Error applying filters: {e}")
+            discover_subfolder_files = bool(mapping_config.get("folder_discovery", False))
+            add_subfolder_links = bool(mapping_config.get("folder_links", False))
 
-                    sync_file_to_notion(full_file_path, config, mapping_config, mapping_type, self, is_batch=True)
-                    files_uploaded_count += 1
-                    time.sleep(0.05)
+            if add_subfolder_links:
+                for name in os.listdir(folder_path):
+                    full_path = os.path.join(folder_path, name)
+                    if os.path.isdir(full_path):
+                        sync_file_to_notion(full_path, config, mapping_config, mapping_type, self, is_batch=True)
+                        files_uploaded_count += 1
+                        time.sleep(0.05)
+
+            if discover_subfolder_files:
+                file_paths = []
+                for root, _, files in os.walk(folder_path):
+                    for filename in files:
+                        file_paths.append(os.path.join(root, filename))
+            else:
+                file_paths = []
+                for filename in os.listdir(folder_path):
+                    full_file_path = os.path.join(folder_path, filename)
+                    if os.path.isfile(full_file_path):
+                        file_paths.append(full_file_path)
+
+            for full_file_path in file_paths:
+                filename = os.path.basename(full_file_path)
+                try:
+                    ignore_exts = handler.mapping_config.get("ignore_extensions", [])
+                    if any(fnmatch.fnmatch(filename, p) for p in ignore_exts):
+                        print(f"Skipping (ext filter): {filename}")
+                        continue
+                    
+                    ignore_files = handler.mapping_config.get("ignore_files", [])
+                    if any(fnmatch.fnmatch(filename, p) for p in ignore_files):
+                        print(f"Skipping (file/wildcard filter): {filename}")
+                        continue
+                except Exception as e:
+                    print(f"Error applying filters: {e}")
+
+                sync_file_to_notion(full_file_path, config, mapping_config, mapping_type, self, is_batch=True)
+                files_uploaded_count += 1
+                time.sleep(0.05)
                     
             print(f"Upload complete. {files_uploaded_count} files processed for {folder_path}.")
         except Exception as e:

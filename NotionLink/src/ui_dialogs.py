@@ -258,6 +258,24 @@ class EditMappingDialog(BaseDialog):
         folder_btn_layout.addWidget(remove_folder_btn)
         layout.addLayout(folder_btn_layout)
 
+        self.folder_discovery_checkbox = QCheckBox(
+            "Folder discovery (include files inside subfolders during upload and sync)"
+        )
+        self.folder_discovery_checkbox.setChecked(self.mapping.get("folder_discovery", False))
+        self.folder_discovery_checkbox.setToolTip(
+            "When enabled, NotionLink discovers and syncs files in nested subfolders as well."
+        )
+        layout.addWidget(self.folder_discovery_checkbox)
+
+        self.folder_links_checkbox = QCheckBox(
+            "Add folder links (add subfolder links that open in Explorer)"
+        )
+        self.folder_links_checkbox.setChecked(self.mapping.get("folder_links", False))
+        self.folder_links_checkbox.setToolTip(
+            "When enabled, subfolders of selected folders are also added as links."
+        )
+        layout.addWidget(self.folder_links_checkbox)
+
         layout.addWidget(QLabel("Ignore files with extensions (comma-separated, e.g. *.tmp, *.log):"))
         self.ignore_ext_entry = QLineEdit()
         self.ignore_ext_entry.setText(", ".join(self.mapping.get("ignore_extensions", ["*.tmp", ".*", "desktop.ini"])))
@@ -365,7 +383,9 @@ class EditMappingDialog(BaseDialog):
             "folders": folders,
             "ignore_extensions": ignore_exts,
             "ignore_files": ignore_files,
-            "full_lifecycle_sync": self.full_lifecycle_checkbox.isChecked()
+            "full_lifecycle_sync": self.full_lifecycle_checkbox.isChecked(),
+            "folder_discovery": self.folder_discovery_checkbox.isChecked(),
+            "folder_links": self.folder_links_checkbox.isChecked()
         }
 
     def save_and_accept(self):
