@@ -49,36 +49,6 @@ except ImportError as e:
 
 
 def main():
-    required_files = [
-        TRAY_ICON_ICO,
-        os.path.join("src", "__init__.py"),
-        os.path.join("src", "core.py"),
-        os.path.join("src", "ui_styles.py"),
-        os.path.join("src", "notion.py"),
-        os.path.join("src", "server.py"),
-        os.path.join("src", "ui_dialogs.py"),
-        os.path.join("src", "ui_main.py"),
-    ]
-    
-    missing_files = [f for f in required_files if not os.path.exists(f)]
-    
-    if missing_files:
-        temp_app = QApplication(sys.argv)
-        error_box = QMessageBox()
-        error_box.setIcon(QMessageBox.Critical)
-        error_box.setWindowTitle("NotionLink - Installation Error")
-        error_box.setText("Required files are missing!")
-        
-        missing_list = "\n".join(f"  • {f}" for f in missing_files)
-        error_box.setInformativeText(
-            f"NotionLink cannot start because required installation files are missing.\n\n"
-            f"Missing files:\n{missing_list}\n\n"
-            f"Please ensure all files from the NotionLink package are present in the installation directory.\n\n"
-            f"Installation directory: {os.path.dirname(os.path.abspath(__file__))}"
-        )
-        error_box.setStandardButtons(QMessageBox.Ok)
-        error_box.exec()
-        sys.exit(1)
     
     print("Sentry initialization deferred (background).")
     
