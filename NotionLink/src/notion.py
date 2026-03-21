@@ -1,14 +1,19 @@
 import re
 import time
-import threading
 import random
+import threading
 from urllib.parse import urlparse, quote, unquote
 from pathlib import Path
 from datetime import datetime
 from notion_client import Client
 import os
 import fnmatch
-from PySide6.QtWidgets import QSystemTrayIcon
+
+
+class NotificationLevel:
+    INFO = 0
+    WARNING = 1
+    CRITICAL = 2
 
 from .core import (
     config, link_cache, notified_errors, file_to_page_map,
@@ -272,7 +277,7 @@ def _attempt_connection_recovery(tray_app):
             
             if tray_app:
                 tray_app.status_updated.emit("Notion: Connected")
-                tray_app.tray_icon.showMessage("NotionLink", "Internet connection restored.", QSystemTrayIcon.Information, 3000)
+                tray_app.tray_icon.showMessage("NotionLink", "Internet connection restored.", NotificationLevel.INFO, 3000)
             
             # Process pending uploads
             process_pending_uploads()
@@ -368,7 +373,7 @@ def sync_file_to_notion(full_file_path, config_data, mapping_config, mapping_typ
                     tray_app.tray_icon.showMessage(
                         "NotionLink: Sync Success",
                         f"'{filename}' was added to {notion_title}.",
-                        QSystemTrayIcon.Information,
+                        NotificationLevel.INFO,
                         3000
                     )
                 # Signal success to clear any previous error states in UI
@@ -414,7 +419,7 @@ def sync_file_to_notion(full_file_path, config_data, mapping_config, mapping_typ
                         current_time = time.time()
                         if current_time - core_module.last_network_notification_time > 60:
                             tray_app.status_updated.emit("Notion: Connection Error")
-                            tray_app.tray_icon.showMessage("NotionLink: Connection Error", "Network error. Retrying in background...", QSystemTrayIcon.Warning, 5000)
+                            tray_app.tray_icon.showMessage("NotionLink: Connection Error", "Network error. Retrying in background...", NotificationLevel.WARNING, 5000)
                             core_module.last_network_notification_time = current_time
                         else:
                             tray_app.status_updated.emit("Notion: Connection Error")
@@ -424,7 +429,7 @@ def sync_file_to_notion(full_file_path, config_data, mapping_config, mapping_typ
                     user_msg = f"Configuration issue with '{notion_title}'. Check settings and permissions."
                 
                 if tray_app and 'Network error' not in user_msg:
-                    tray_app.tray_icon.showMessage("NotionLink: Configuration Error", user_msg, QSystemTrayIcon.Warning, 5000)
+                    tray_app.tray_icon.showMessage("NotionLink: Configuration Error", user_msg, NotificationLevel.WARNING, 5000)
                     tray_app.user_error_signal.emit(user_msg)
             
             if transaction:
@@ -441,7 +446,7 @@ def sync_file_to_notion(full_file_path, config_data, mapping_config, mapping_typ
                     bug_msg = f"An unexpected error occurred. The problem has been logged for review."
                 
                 if tray_app:
-                    tray_app.tray_icon.showMessage("NotionLink: Application Error", bug_msg, QSystemTrayIcon.Critical, 5000)
+                    tray_app.tray_icon.showMessage("NotionLink: Application Error", bug_msg, NotificationLevel.CRITICAL, 5000)
                     tray_app.user_error_signal.emit(f"Application error with '{filename}': {bug_msg}")
             
             if transaction:
@@ -486,7 +491,7 @@ def archive_notion_page(page_id, notion_token, filename, tray_app=None):
             tray_app.tray_icon.showMessage(
                 "NotionLink: File Deleted",
                 f"'{filename}' was removed from Notion (archived).",
-                QSystemTrayIcon.Information,
+                NotificationLevel.INFO,
                 3000
             )
         return True
@@ -523,7 +528,7 @@ def update_notion_page_filename(page_id, new_filename, new_link, notion_token, o
             tray_app.tray_icon.showMessage(
                 "NotionLink: File Renamed",
                 f"'{old_filename}' → '{new_filename}' updated in Notion.",
-                QSystemTrayIcon.Information,
+                NotificationLevel.INFO,
                 3000
             )
         return True
@@ -674,7 +679,7 @@ def remove_file_from_page(page_id, filename, token, tray_app=None, server_link=N
             tray_app.tray_icon.showMessage(
                 "NotionLink: File Removed",
                 f"Link for '{filename}' removed from page.",
-                QSystemTrayIcon.Information,
+                NotificationLevel.INFO,
                 3000
             )
         return True
@@ -741,10 +746,11 @@ def update_file_on_page(page_id, old_filename, new_filename, new_link, token, tr
             tray_app.tray_icon.showMessage(
                 "NotionLink: File Renamed",
                 f"Link updated: '{old_filename}' → '{new_filename}'",
-                QSystemTrayIcon.Information,
+                NotificationLevel.INFO,
                 3000
             )
         return True
     except Exception as e:
         print(f"Error updating file on page: {e}")
         return False
+

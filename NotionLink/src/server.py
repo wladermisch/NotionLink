@@ -8,7 +8,7 @@ import platform
 import fnmatch
 from http.server import BaseHTTPRequestHandler
 from http import HTTPStatus
-from urllib.parse import unquote, quote
+from urllib.parse import unquote, quote, urlparse, parse_qs
 from watchdog.events import FileSystemEventHandler
 import win32com.client
 
@@ -46,6 +46,26 @@ class MyHandler(BaseHTTPRequestHandler):
     # HTTP request handler for opening files via browser links.
     
     def do_GET(self):
+        parsed = urlparse(self.path)
+        if parsed.path == "/_notionlink/open-dashboard":
+            tray_app = getattr(self.__class__, "tray_app", None)
+            if tray_app is not None:
+                def _open_dashboard_notice():
+                    tray_app.show_dashboard()
+                    tray_app.on_user_error(
+                        "NotionLink is already running and accessible via the tray menu."
+                    )
+
+                tray_app.invoke_on_main_thread(_open_dashboard_notice)
+
+            body = b"OK"
+            self.send_response(HTTPStatus.OK)
+            self.send_header('Content-Type', 'text/plain; charset=utf-8')
+            self.send_header('Content-Length', str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+
         print('Getting path : --------')
         print(self.path)
         if not ('GET' in self.path) and not ('favicon' in self.path):
@@ -124,6 +144,7 @@ def start_server_blocking(tray_app):
         if is_port_in_use(port):
             raise OSError(f"Port {port} is already in use. Another NotionLink instance or application may be using it.")
 
+        MyHandler.tray_app = tray_app
         httpd_instance = ReusableTCPServer(("", port), MyHandler)
         httpd = httpd_instance
         
