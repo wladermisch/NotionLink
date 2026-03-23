@@ -24,32 +24,11 @@ wheels/
 venv/
 ENV/
 env/
-.venv/
-venv*/
-env*/
-.venv*/
-*/venv/
-*/env/
-*/.venv/
-
-# Local environment and secrets
-.python-version
-.env
-.env.*
-!.env.example
 
 # Config and logs
 config.json
 output.log
 *.log
-error.log
-notionlink.log
-
-# Runtime and temporary files
-*.pid
-*.tmp
-*.bak
-*.orig
 
 # IDE
 .vscode/
@@ -62,3 +41,7 @@ notionlink.log
 .DS_Store
 Thumbs.db
 desktop.ini
+
+notionlink.log
+config.json
+error.log
