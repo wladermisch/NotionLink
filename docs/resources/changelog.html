@@ -76,6 +76,16 @@
                   <div class="resources_changelog-list">
 
                     <div class="resources_changelog-item">
+                      <p>v5.1.5 — Apr 2026</p>
+                      <ul role="list">
+                        <li><p><strong>Install Counter (Website):</strong> Added a live installation counter on the GitHub page backed by a dynamic Worker endpoint.</p></li>
+                        <li><p><strong>First-Time Setup Integration:</strong> Installation registration is now sent once after successful first-time setup using an anonymous hashed installation identifier.</p></li>
+                        <li><p><strong>Local Link Opening Reliability:</strong> Hardened localhost file-open request handling with path normalization/validation and clearer "not found" behavior for missing targets.</p></li>
+                        <li><p><strong>Server Error Noise Reduction:</strong> Gracefully handles client disconnects while writing HTTP responses to prevent noisy follow-up tracebacks (for example, ConnectionAbortedError after browser-side abort).</p></li>
+                      </ul>
+                    </div>
+
+                    <div class="resources_changelog-item">
                       <p>v5.1.3 — Mar 2026</p>
                       <ul role="list">
                         <li><p><strong>Startup Experience:</strong> Improved launch responsiveness by prioritizing tray/dashboard rendering and moving heavier startup work further into the background.</p></li>
