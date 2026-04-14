@@ -108,17 +108,17 @@ class MyHandler(BaseHTTPRequestHandler):
             <p><small>{escaped_path}</small></p>
             <p><small>{escaped_msg}</small></p>
             <script>
-            (function(){
-                try {
+            (function(){{
+                try {{
                     // Try to close the tab/window (may be blocked by browser).
                     window.open('', '_self');
                     window.close();
-                } catch(e) {
+                }} catch(e) {{
                     // ignore
-                }
+                }}
                 // As a fallback, navigate to about:blank shortly after.
-                setTimeout(function(){ window.location.href = 'about:blank'; }, 300);
-            })();
+                setTimeout(function(){{ window.location.href = 'about:blank'; }}, 300);
+            }})();
             </script>
             </body></html>
             """.encode('utf-8')
