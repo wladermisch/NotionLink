@@ -2,7 +2,6 @@
 
 # NotionGate (formerly NotionLink)
 
-**The seamless bridge between your local files and Notion.**
 
 [](https://ko-fi.com/E1E21NYEKB)
 [](https://notiongate.app/)
